@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+import datetime 
+from dateutil import relativedelta
 
 #Main window
 root = tk.Tk()
@@ -38,30 +40,32 @@ age.grid(row = 4, column = 0, columnspan = 2, padx = 10, pady = 5)
 #Function to calculate age
 
 def calculate_age():
-    current_year = 2025
-    current_month = 11
-    month = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-    current_day = 27
     try:
-        year_of_birth = int(YearEntry.get())
-        month_of_birth = str(MonthEntry.get())
-        month_index = (month.index(month_of_birth)) + 1
-        day_of_birth = int(DayEntry.get())
+        year = int(YearEntry.get())
+        month = int(MonthEntry.get())
+        day = int(DayEntry.get())
 
-        years = current_year - year_of_birth
-        months = current_month - month_index
-        days = current_day - day_of_birth
+        today = datetime.date.today()
+        birth_date = datetime.date(year, month, day)
 
-        days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31]
+        years = today.year - birth_date.year
+        if (today.month, today.day) < (birth_date.month, birth_date.day):
+            years -= 1
 
-        if days < 0:
-            months -=1
-            days += days_in_month[current_month -2]
+        #Months and days before last birthday
+        try:
+            last_birthday = datetime.date(today.year, birth_date.month, birth_date.day)
+        except ValueError:
+            # Fix for Feb 29
+            last_birthday = datetime.date(today.year, birth_date.month, birth_date.day - 1)
 
-        if months < 0:
-            years -=1
-            months += 12
+        if last_birthday > today:
+            last_birthday = datetime.date(today.year - 1, birth_date.month, birth_date.day)
 
+        delta = today - last_birthday
+        months = delta.days //30
+        days = delta.days % 30
+        
         age_of_birth = (f"{years} years, {months} months and {days} days")
 
         age.delete(1.0, tk.END)
